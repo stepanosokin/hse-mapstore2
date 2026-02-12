@@ -72,6 +72,8 @@ RUN mkdir -p ${DATA_DIR}
 
 
 RUN cp ${CATALINA_BASE}/docker/wait-for-postgres.sh /usr/bin/wait-for-postgres
+RUN sed -i 's/\r$//' /usr/bin/wait-for-postgres \
+    && chmod +x /usr/bin/wait-for-postgres
 
 RUN apt-get update && apt-get install --yes wget gnupg2 lsb-release \
     && echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
