@@ -29,3 +29,8 @@ site
 venv
 __pycache__
 war/
+geoserver/geoserver_data/
+geoserver/geoserver_data_1/
+geoserver/geoserver_data_2/
+pg_data/
+mapstore_datadir/

@@ -21,7 +21,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: geostore
     volumes:
-    - pg_data:${PGDATA:-/var/lib/postgresql/data}:rw
+    # - pg_data:${PGDATA:-/var/lib/postgresql/data}:rw
+    - pg_data:/var/lib/postgresql/data
     ports:
       - 5432
     networks:
@@ -36,8 +37,14 @@ services:
         MAPSTORE_WEBAPP_SRC: "./war/mapstore.war"
     container_name: mapstore
     command: [ "wait-for-postgres", "postgres", "5432", "postgres", "postgres", "catalina.sh", "run" ]
+    environment:
+      # CATALINA_OPTS: "-Dgeostore-ovr=file:///usr/local/tomcat/conf/geostore-datasource-ovr.properties"
+      CATALINA_OPTS: "-Dgeostore-ovr=file:///usr/local/tomcat/docker/geostore-datasource-ovr.properties"
     depends_on:
       - postgres
+      - geoserver
+    # volumes:
+    #   - ./docker/geostore-datasource-ovr.properties:/usr/local/tomcat/conf/geostore-datasource-ovr.properties:ro
     ports:
       - 8080
     networks:
@@ -52,6 +59,26 @@ services:
       - 80:80
     depends_on:
       - mapstore
+    networks:
+      - mapstore-network
+  
+  geoserver:
+    # 1. Use the relative URI like /geoserver/wms to add services to mapstore.
+    # 2. proxy configs necessary to use geoserver from inside this compose project made to docker/mapstore.conf file at the end.
+    # 3. to access the geoserver GUI use the proxied http://localhost/geoserver URL
+    # 4. set the <proxyBaseUrl>http://localhost/geoserver</proxyBaseUrl> parameter inside geoserver/geoserver_data/global.xml
+    build:
+      context: ./geoserver
+      dockerfile: Dockerfile
+    container_name: geoserver
+    volumes:
+      - ./geoserver/geoserver_data:/opt/geoserver_data
+      # - ./geoserver/geoserver_data/workspaces/hsegdc/sber@postgres-gdc-001:/opt/geoserver_data/workspaces/hsegdc/sber@postgres-gdc-001
+      # - ./geoserver/geoserver_data/workspaces/hsegdc/zavody_rf@postgres-gdc-001:/opt/geoserver_data/workspaces/hsegdc/zavody_rf@postgres-gdc-001
+      # - ./geoserver/geoserver_data/workspaces/hsegdc/styles:/opt/geoserver_data/workspaces/hsegdc/styles
+      # - ./geoserver/geoserver_data/gwc_layers/LayerInfoImpl-68762db6_19cb38eca0b_6fc.xml:/opt/geoserver_data/gwc_layers/LayerInfoImpl-68762db6_19cb38eca0b_6fc.xml
+    ports:
+      - 8081:8080
     networks:
       - mapstore-network
 
