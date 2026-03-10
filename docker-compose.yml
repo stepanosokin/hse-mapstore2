@@ -80,7 +80,22 @@ services:
       - 8081:8080
     networks:
       - mapstore-network
-
+  
+  db:
+    image: postgis/postgis:18-3.6
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_USER: "postgres"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      POSTGRES_DB: "mapstore"
+      PGPORT: 5433
+    volumes:
+      - ./db_pg_data:/var/lib/postgresql/data
+    ports:
+      - 5433:5433
+    networks:
+      - mapstore-network
 volumes:
   pg_data:
 
